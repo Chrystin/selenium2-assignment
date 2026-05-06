@@ -7,16 +7,19 @@ public class TestBase {
     protected ChromeDriver driver;
 
     public void startBrowser() {
-        WebDriverManager.chromedriver().setup();
+      WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        
-        // Advanced: webdriver_config & headless_execution
+    
         options.addArguments("--start-maximized");
         options.addArguments("--disable-blink-features=AutomationControlled");
-        // options.addArguments("--headless=new"); // Uncomment for headless
+        // Ensure this is definitely commented out:
+        // options.addArguments("--headless=new"); 
 
         driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+    
+        // Add this to catch issues early
+        System.out.println("Browser started successfully.");
     }
 
     public void stopBrowser() {

@@ -19,5 +19,6 @@ public class LoginPage extends PageBase {
         // Step 2: Password
         wait.until(ExpectedConditions.visibilityOfElementLocated(passwordField)).sendKeys(pass);
         driver.findElement(loginBtn).click();
+        try { Thread.sleep(1000); } catch(Exception e) {}
     }
 }
