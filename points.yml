@@ -141,7 +141,7 @@ advanced:
     link: "https://www.selenium.dev/documentation/webdriver/drivers/options/"
 
   cookie_manipulation:       # 6 pts | once
-    done: false
+    done: true
     description: "Manipulate cookies meaningfully (e.g. add/delete/read cookies, skip consent popup)"
     link: "https://www.selenium.dev/documentation/webdriver/interactions/cookies/"
 
@@ -161,7 +161,7 @@ advanced:
     link: "https://www.selenium.dev/documentation/webdriver/elements/file_upload/"
 
   history_test:              # 4 pts | once
-    done: false
+    done: true
     description: "Test browser history navigation (e.g. back(), forward())"
     link: "https://www.selenium.dev/documentation/webdriver/interactions/navigation/"
 
@@ -175,7 +175,7 @@ advanced:
     description: "Verify an e-mail was sent (e.g. registration activation link, password reset)"
 
   random_data:               # 8 pts | once
-    done: false
+    done: true
     description: "Generate random test data (e.g. random username, email) and use it in a test"
 
   download_files:            # 12 pts | once

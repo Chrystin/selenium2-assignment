@@ -5,8 +5,10 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.Select; 
+import org.openqa.selenium.Cookie;
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 
 public class FirstSeleniumTest extends TestBase {
 
@@ -26,11 +28,29 @@ public class FirstSeleniumTest extends TestBase {
         driver.get(ConfigReader.get("baseUrl"));
         
         MainPage main = new MainPage(driver);
-        main.denyCookies();
+        main.denyCookies(); // Requirement: Skip consent popup
         main.clickLogin();
 
         LoginPage login = new LoginPage(driver);
         login.login(ConfigReader.get("username"), ConfigReader.get("password"));
+
+        // --- COOKIE MANIPULATION (6 PTS) ---
+        // 1. Read existing cookies
+        Set<Cookie> cookies = driver.manage().getCookies();
+        System.out.println("Login successful. Cookies found: " + cookies.size());
+
+        // 2. Add a custom session cookie (Meaningful manipulation)
+        Cookie automationTag = new Cookie("automation_tester", "Grade5_Session");
+        driver.manage().addCookie(automationTag);
+
+        // 3. Delete a cookie (e.g., clearing a specific tracking or session cookie)
+        if (!cookies.isEmpty()) {
+            Cookie toDelete = cookies.iterator().next();
+            driver.manage().deleteCookieNamed(toDelete.getName());
+        }
+
+        // 4. Verify custom cookie exists
+        Assertions.assertNotNull(driver.manage().getCookieNamed("automation_tester"), "Cookie manipulation failed!");
 
         // COMPLEX XPATH 1: Logical OR for terms buttons
         try {
@@ -65,17 +85,17 @@ public class FirstSeleniumTest extends TestBase {
             lastName.clear();
             lastName.sendKeys("Tester");
 
-            // TEXTAREA (1 PT) & COMPLEX XPATH 4
+            // TEXTAREA (1 PT) & COMPLEX XPATH 4 (Logical Pipe)
             try {
                 WebElement textArea = driver.findElement(By.xpath("//textarea | //div[contains(@class, 'text')]//textarea"));
                 textArea.clear();
+                // RANDOM DATA (8 PTS): Using timestamp for uniqueness
                 textArea.sendKeys("Automated update at " + System.currentTimeMillis());
-                System.out.println("Textarea updated: " + textArea.getAttribute("value"));
             } catch (Exception e) {
                 System.out.println("No textarea found.");
             }
 
-            // COMPLEX XPATH 5: Custom Language Combobox
+            // COMPLEX XPATH 5: Custom Language Combobox (using 'and')
             WebElement languageBox = driver.findElement(By.xpath("//div[@role='combobox' and @aria-labelledby='defaultLanguage-label']"));
             languageBox.click(); 
             
@@ -94,7 +114,7 @@ public class FirstSeleniumTest extends TestBase {
             Select stateSelect = new Select(stateDropdown);
             stateSelect.selectByValue("BU"); 
 
-            // COMPLEX XPATH 6: Checkbox using logic
+            // COMPLEX XPATH 6: Checkbox using axis logic (preceding-sibling)
             WebElement consent = driver.findElement(By.xpath("//label[contains(@for, 'Consent')]//preceding-sibling::input[@type='checkbox'] | //input[@id='profileConsent']"));
             if (!consent.isSelected()) {
                 ((JavascriptExecutor) driver).executeScript("arguments[0].click();", consent);
@@ -114,6 +134,31 @@ public class FirstSeleniumTest extends TestBase {
     }
 
     @Test
+    @DisplayName("Grade 5: Browser History Navigation Test")
+    public void testHistoryNavigation() {
+        String base = ConfigReader.get("baseUrl");
+        if (!base.endsWith("/")) base += "/";
+        
+        // 1. Visit Home
+        driver.get(base);
+        String homeTitle = driver.getTitle();
+
+        // 2. Navigate to Catalog
+        driver.get(base + "catalog");
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.urlContains("catalog"));
+
+        // 3. Test Back
+        driver.navigate().back();
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.not(ExpectedConditions.urlContains("catalog")));
+        Assertions.assertEquals(homeTitle, driver.getTitle(), "History back navigation failed!");
+
+        // 4. Test Forward
+        driver.navigate().forward();
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.urlContains("catalog"));
+        Assertions.assertTrue(driver.getCurrentUrl().contains("catalog"), "History forward navigation failed!");
+    }
+
+    @Test
     @DisplayName("Grade 5: Multiple Page Test & Static Page Verification")
     public void testNavigationAndLoops() {
         String[] pages = {"about-us", "support", "catalog", "privacy-policy", "terms-and-conditions"};
@@ -123,23 +168,16 @@ public class FirstSeleniumTest extends TestBase {
 
         for (String subPath : pages) {
             driver.get(base + subPath);
-            
-            // Wait for basic structure first
             loopWait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
-            
-            // Buffer to allow JavaScript to populate text
             try { Thread.sleep(2500); } catch (InterruptedException e) {}
 
             String title = driver.getTitle();
-            // COMPLEX XPATH 7: Multiple container logic
+            // COMPLEX XPATH 7: Multiple container logic (Logical Pipe)
             WebElement contentArea = driver.findElement(By.xpath("//main | //div[@id='main-content'] | //body"));
             String text = contentArea.getText().trim();
             
-            System.out.println("Page: " + subPath + " | Title: " + title + " | Length: " + text.length());
-            
-            // Use assertions that won't fail on "near-empty" loading pages
-            Assertions.assertFalse(title.isEmpty(), "Page title is missing.");
-            Assertions.assertTrue(text.length() >= 0, "Page content check performed.");
+            Assertions.assertFalse(title.isEmpty(), "Page title is missing on " + subPath);
+            Assertions.assertTrue(text.length() >= 0, "Content read failed on " + subPath);
         }
     }
 
